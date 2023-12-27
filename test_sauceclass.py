@@ -6,7 +6,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pytest
 
-class test_sauceclass:
+class Test_Sauceclass:
     def setup_method(self):
         chrome_driver_path = Service("/Users/gunesgulay/Downloads/chromedriver-mac-arm64/chromedriver")
         self.driver = webdriver.Chrome(service=chrome_driver_path)
@@ -29,16 +29,13 @@ class test_sauceclass:
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
-        passwordInput.send_keys("")
-
         loginButton = self.driver.find_element(By.ID,"login-button")
         loginButton.click()
 
         errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
         assert errorMessage.text == "Epic sadface: Password is required"
 
-    @pytest.mark.parametrize("username", "password", [("locked_out_user", "secret_sauce")])    
+    @pytest.mark.parametrize("username, password", [("locked_out_user", "secret_sauce")])    
     def test_invalid_login(self, username, password):
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
@@ -52,7 +49,7 @@ class test_sauceclass:
         errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
         assert errorMessage.text == "Epic sadface: Sorry, this user has been locked out."
 
-    @pytest.mark.parametrize("username", "password", [("standard_user", "secret_sauce")])    
+    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
     def test_product_count(self, username, password):
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
@@ -66,7 +63,7 @@ class test_sauceclass:
         listOfProducts = self.driver.find_elements(By.CLASS_NAME,"inventory_item_label")
         assert len(listOfProducts) == 6 
 
-    @pytest.mark.parametrize("username", "password", [("standard_user", "secret_sauce")])    
+    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
     def test_add_product_to_cart(self, username, password):
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
@@ -86,7 +83,7 @@ class test_sauceclass:
         productName = self.driver.find_element(By.CSS_SELECTOR, ".inventory_item_name")
         assert productName.text == "Sauce Labs Backpack"
 
-    @pytest.mark.parametrize("username", "password", [("standard_user", "secret_sauce")])    
+    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
     def test_checkout_all_fields_empty(self, username, password):
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
@@ -112,7 +109,7 @@ class test_sauceclass:
         errorMessageController = self.driver.find_element(By.CSS_SELECTOR,"h3")
         assert errorMessageController.text == "Error: First Name is required"
 
-    @pytest.mark.parametrize("username", "password", "firstname", "lastname", "zipcode", [("standard_user", "secret_sauce", "test", "automation", "12345")])    
+    @pytest.mark.parametrize("username, password, firstname, lastname, zipcode", [("standard_user", "secret_sauce", "test", "automation", "12345")])    
     def test_successful_purchase(self, username, password, firstname, lastname, zipcode):
         usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
         usernameInput.send_keys(username)
