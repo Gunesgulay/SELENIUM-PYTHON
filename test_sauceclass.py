@@ -5,144 +5,147 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pytest
+import openpyxl
+from constants import globalContants as c
 
 class Test_Sauceclass:
     def setup_method(self):
         chrome_driver_path = Service("/Users/gunesgulay/Downloads/chromedriver-mac-arm64/chromedriver")
         self.driver = webdriver.Chrome(service=chrome_driver_path)
-        self.driver.get("https://www.saucedemo.com")
+        self.driver.get(c.BASE_URL)
         self.driver.maximize_window()
 
     def teardown_method(self):
         self.driver.quit()  
 
-    @pytest.mark.skip
+    def getData():
+        excel = openpyxl.load_workbook("data/sauce_class.xlsx") 
+        sayfa = excel["Sayfa1"]
+        rows = sayfa.max_row
+        data = []
+        for i in range (2,rows+1):
+            firstname = sayfa.cell(i, 1).value
+            lastname = sayfa.cell(i, 2).value
+            zipcode = sayfa.cell(i, 3).value
+            data.append((firstname, lastname, zipcode))
+             
+        return data    
+
     def test_two_fields_empty(self):
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
-        assert errorMessage.text == "Epic sadface: Username is required"
+        errorMessage = self.driver.find_element(By.XPATH,c.ERROR_MESSAGE_XPATH)
+        assert errorMessage.text == c.USERNAME_REQUIRED
 
     @pytest.mark.parametrize("username", [("standard_user")])
     def test_one_fields_empty(self, username):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
         usernameInput.send_keys(username)
 
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
-        assert errorMessage.text == "Epic sadface: Password is required"
+        errorMessage = self.driver.find_element(By.XPATH,c.ERROR_MESSAGE_XPATH)
+        assert errorMessage.text == c.PASSWORD_REQUIRED
 
     @pytest.mark.parametrize("username, password", [("locked_out_user", "secret_sauce")])    
     def test_invalid_login(self, username, password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
         usernameInput.send_keys(username)
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
         passwordInput.send_keys(password)
 
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
-        assert errorMessage.text == "Epic sadface: Sorry, this user has been locked out."
+        errorMessage = self.driver.find_element(By.XPATH,c.ERROR_MESSAGE_XPATH)
+        assert errorMessage.text == c.USERNAME_PASSWORD_DONTMATCH
 
     @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
     def test_product_count(self, username, password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
         usernameInput.send_keys(username)
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
         passwordInput.send_keys(password)
 
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        listOfProducts = self.driver.find_elements(By.CLASS_NAME,"inventory_item_label")
+        listOfProducts = self.driver.find_elements(By.CLASS_NAME,c.LIST_PRODUCTS_CLASS)
         assert len(listOfProducts) == 6 
 
-    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
-    def test_add_product_to_cart(self, username, password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
-        usernameInput.send_keys(username)
+    def add_product_to_cart(self):
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
+        usernameInput.send_keys("standard_user")
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
-        passwordInput.send_keys(password)
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
+        passwordInput.send_keys("secret_sauce")
 
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"add-to-cart-sauce-labs-backpack")))
+        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.ADD_TO_CART_ID)))
         addToCart.click()
 
-        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,".shopping_cart_link")))
-        goToCart.click()
-
-        productName = self.driver.find_element(By.CSS_SELECTOR, ".inventory_item_name")
-        assert productName.text == "Sauce Labs Backpack"
+        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,c.GO_TO_CART_CSS)))
+        goToCart.click()    
 
     @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
-    def test_checkout_all_fields_empty(self, username, password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+    def test_add_product_to_cart_controller(self, username, password):
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
         usernameInput.send_keys(username)
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
         passwordInput.send_keys(password)
 
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
 
-        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"add-to-cart-sauce-labs-backpack")))
+        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.ADD_TO_CART_ID)))
         addToCart.click()
 
-        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,".shopping_cart_link")))
+        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,c.GO_TO_CART_CSS)))
         goToCart.click()
 
-        checkoutButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"checkout")))
+        productName = self.driver.find_element(By.CSS_SELECTOR, c.PRODUCT_NAME_CSS)
+        assert productName.text == c.PRODUCT_NAME
+
+    def test_checkout_all_fields_empty(self):
+        self.add_product_to_cart()
+
+        checkoutButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.CHECKOUT_BUTTON_ID)))
         checkoutButton.click()
 
-        continueButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"continue")))
+        continueButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.CONTINUE_BUTTON_ID)))
         continueButton.click()
 
-        errorMessageController = self.driver.find_element(By.CSS_SELECTOR,"h3")
-        assert errorMessageController.text == "Error: First Name is required"
+        errorMessageController = self.driver.find_element(By.CSS_SELECTOR,c.ERROR_MESSAGE_CONTROLLER_CSS)
+        assert errorMessageController.text == c.ERROR_MESSAGE_CONTROLLER
 
-    @pytest.mark.parametrize("username, password, firstname, lastname, zipcode", [("standard_user", "secret_sauce", "test", "automation", "12345")])    
-    def test_successful_purchase(self, username, password, firstname, lastname, zipcode):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
-        usernameInput.send_keys(username)
+    @pytest.mark.parametrize("firstname, lastname, zipcode", getData())   
+    def test_successful_purchase(self, firstname, lastname, zipcode):
+        self.add_product_to_cart()
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
-        passwordInput.send_keys(password)
-
-        loginButton = self.driver.find_element(By.ID,"login-button")
-        loginButton.click()
-
-        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"add-to-cart-sauce-labs-backpack")))
-        addToCart.click()
-
-        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,".shopping_cart_link")))
-        goToCart.click()   
-
-        checkoutButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"checkout")))
+        checkoutButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.CHECKOUT_BUTTON_ID)))
         checkoutButton.click() 
 
-        enterFirstName = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"first-name")))
+        enterFirstName = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.FIRST_NAME_ID)))
         enterFirstName.send_keys(firstname)
 
-        enterLastName = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"last-name")))
+        enterLastName = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.LAST_NAME_ID)))
         enterLastName.send_keys(lastname)
 
-        enterZipCode = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"postal-code")))
+        enterZipCode = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.ZIP_CODE_ID)))
         enterZipCode.send_keys(zipcode)
 
-        continueButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"continue")))
+        continueButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.CONTINUE_BUTTON_ID)))
         continueButton.click()
 
-        finishButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"finish")))
+        finishButton = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.FINISH_BUTTON_ID)))
         finishButton.click()
 
-        messageController = self.driver.find_element(By.CSS_SELECTOR,".complete-header")
-        assert messageController.text == "Thank you for your order!"
+        messageController = self.driver.find_element(By.CSS_SELECTOR,c.ORDER_MESSAGE_CONTROLLER_CSS)
+        assert messageController.text == c.ORDER_MESSAGE

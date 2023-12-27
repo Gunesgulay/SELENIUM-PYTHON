@@ -6,42 +6,57 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 import pytest
+import openpyxl
+from constants import globalContants as c
         
 class Test_democlass:
     def setup_method(self):
         chrome_driver_path = Service("/Users/gunesgulay/Downloads/chromedriver-mac-arm64/chromedriver")
         self.driver = webdriver.Chrome(service=chrome_driver_path)
-        self.driver.get("https://www.saucedemo.com")
+        self.driver.get(c.BASE_URL)
         self.driver.maximize_window()
 
     def teardown_method(self):
         self.driver.quit()    
+
+    def getData():
+        excel = openpyxl.load_workbook(c.invalid_login_xlsx) 
+        sayfa = excel["Sayfa1"]
+        rows = sayfa.max_row
+        data = []
+        for i in range (2,rows+1):
+            username = sayfa.cell(i,1).value
+            password = sayfa.cell(i,2).value
+            data.append((username, password))
+             
+        return data    
     
-    @pytest.mark.skip
-    def test_invalid_login(self):
+    @pytest.mark.parametrize("username, password", getData())
+    def test_invalid_login(self, username, password):
         
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
-        usernameInput.send_keys("locked_out_user")
-
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
-        passwordInput.send_keys("secret_sauce")
-
-        loginButton = self.driver.find_element(By.ID,"login-button")
-        loginButton.click()
-        
-        errorMessage = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3")
-        assert errorMessage.text == "Epic sadface: Sorry, this user has been locked out."
-       
-    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce"), ("problem_user", "secret_sauce")])
-    def test_valid_login(self, username, password):
-        
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
         usernameInput.send_keys(username)
 
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
         passwordInput.send_keys(password)
+
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
+        loginButton.click()
         
-        loginButton = self.driver.find_element(By.ID,"login-button")
+        errorMessage = self.driver.find_element(By.XPATH,c.ERROR_MESSAGE_XPATH)
+        assert errorMessage.text == c.USERNAME_PASSWORD_DONTMATCH
+
+
+    @pytest.mark.skip   
+    def test_valid_login(self):
+        
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID, c.USERNAME_ID)))
+        usernameInput.send_keys("standard_user")
+
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
+        passwordInput.send_keys("secret_sauce")
+        
+        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
         loginButton.click()
         
         addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='add-to-cart-test.allthethings()-t-shirt-(red)']")))
@@ -51,7 +66,34 @@ class Test_democlass:
         actionChains.perform()
         remove = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='remove-test.allthethings()-t-shirt-(red)']")))
         assert remove.text == "Remove"
-        
 
-   
-        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+
+    
