@@ -6,7 +6,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import pytest
 import openpyxl
-from constants import globalContants as c
+from constants import globalConstants as c
 
 class Test_Sauceclass:
     def setup_method(self):
@@ -92,23 +92,9 @@ class Test_Sauceclass:
 
         goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,c.GO_TO_CART_CSS)))
         goToCart.click()    
-
-    @pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])    
-    def test_add_product_to_cart_controller(self, username, password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.USERNAME_ID)))
-        usernameInput.send_keys(username)
-
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.PASSWORD_ID)))
-        passwordInput.send_keys(password)
-
-        loginButton = self.driver.find_element(By.ID,c.LOGIN_BUTTON_ID)
-        loginButton.click()
-
-        addToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,c.ADD_TO_CART_ID)))
-        addToCart.click()
-
-        goToCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.CSS_SELECTOR,c.GO_TO_CART_CSS)))
-        goToCart.click()
+  
+    def test_add_product_to_cart_controller(self):
+        self.add_product_to_cart()
 
         productName = self.driver.find_element(By.CSS_SELECTOR, c.PRODUCT_NAME_CSS)
         assert productName.text == c.PRODUCT_NAME

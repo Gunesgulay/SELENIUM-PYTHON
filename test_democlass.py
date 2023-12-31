@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
 import pytest
 import openpyxl
-from constants import globalContants as c
+from constants import globalConstants as c
         
 class Test_democlass:
     def setup_method(self):
